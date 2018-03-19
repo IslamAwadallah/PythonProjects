@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import re
+import numpy
+
+
+import MySQLdb
 import nltk
 import arabicstemmer
 
@@ -12,15 +16,15 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
 from nltk.stem.isri import ISRIStemmer
 import facebook
-import mysql.connector
 
 
 
-# db=mysql.connector()
+import sys
 
 
 
-short_token='EAAEzLTR2AqkBAONEBQRYLENEURYcYxamj5YDdqy0JIhfdMnaSSwJSv7DIDsqKC3ZB2nbbYNBZCyAVrfxOqBoF4rly5nqpDzBil4YWKkrMRDtdvFdDN0LTbEXHRXiLtmWPfPbTSaQ0XTbEWtaZCUFxPUALcc09NjoLldDxv6WURsygSgjUHSZCpV87pXjuo8ZD'
+
+short_token='EAAEzLTR2AqkBAPLdWz61MUAawDB4vRescsVfUFat97UQcTM3fHdm5Lzc6jQE9TZCzV9KsFB1BDQAZB1eM2FjWYjgaVbZA9YDGI7qeuAHjkL6vMuU4dCPGIKZBGymQU2ujrO5GYLg6Pk5yzPGfnuZATWgrdLMyHRCojcMUeA7qAGzfHqTCBWqZCrFZCzwwfZCH32SJ74hdV52ZBgZDZD'
 
 graph=facebook.GraphAPI(short_token)
 id='337744223404713'
@@ -65,66 +69,75 @@ def GetProductsForSalary(x):
 def GetProducts(product):
     q1 = re.search("لاب توب", product)
     q2 = re.search("Samsung Galaxy", product)
-    q3 = re.search("طابعة", product)
+    # q3 = re.search("طابعة", product)
     q4 = re.search("iphone", product)
     q5 = re.search("اي فون", product)
     q6 = re.search("لابتوب", product)
     q7 = re.search("Laptop", product)
-    q8 = re.search("سماعة", product)
-    q9 = re.search("Intel", product)
-    q10 = re.search("شواحن", product)
-    q11 = re.search("GB", product)
-    q12 = re.search("ram", product)
-    q13 = re.search("شاحن", product)
-    q14 = re.search("Samsung Galaxy j7", product)
-    q15 = re.search("Samsung Galaxy j5", product)
+    # q8 = re.search("سماعة", product)
+    # q9 = re.search("Intel", product)
+    # q10 = re.search("شواحن", product)
+    # q11 = re.search("GB", product)
+    # q12 = re.search("ram", product)
+    # q13 = re.search("شاحن", product)
+    # q14 = re.search("Samsung Galaxy j7", product)
+    # q15 = re.search("Samsung Galaxy j5", product)
+    q20=re.search("عروض",product)
 
     # print("pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",q.match())
-    if q1 or q2 or  q6 or q4 or q5  or q7 :
-        # print(q.group(0))
-            if q1:print(q1.group(0));return q1.group(0)
-            if q2:print(q2.group(0));return q2.group(0)
-            if q3:print(q3.group(0));return  q3.group(0)
-            if q4:print(q4.group(0));return q4.group(0)
-            if q5:print(q5.group(0));return q5.group(0)
-            if q6:print(q6.group(0));return q6.group(0)
-            if q7:print(q7.group(0));return q7.group(0)
-            if q8:print(q8.group(0));return q8.group(0)
-            if q9: print(q9.group(0));return q9.group(0)
-            if q10: print(q10.group(0));return q10.group(0)
-            if q11: print(q11.group(0));return q11.group(0)
-            if q12: print(q12.group(0));return q12.group(0)
-            if q13: print(q13.group(0));return q13.group(0)
-            if q14: print(q14.group(0));return q14.group(0)
-            if q15: print(q15.group(0));return q15.group(0)
+    if not q20:
+        if  q1 or q2 or  q6 or q4 or q5  or q7:
+            # print(q.group(0))
+                if q1:print(q1.group(0));return q1.group(0)
+                if q2:print(q2.group(0));return q2.group(0)
+                # if q3:print(q3.group(0));return  q3.group(0)
+                if q4:print(q4.group(0));return q4.group(0)
+                if q5:print(q5.group(0));return q5.group(0)
+                if q6:print(q6.group(0));return q6.group(0)
+                if q7:print(q7.group(0));return q7.group(0)
+                # if q8:print(q8.group(0));return q8.group(0)
+                # if q9: print(q9.group(0));return q9.group(0)
+                # if q10: print(q10.group(0));return q10.group(0)
+                # if q11: print(q11.group(0));return q11.group(0)
+                # if q12: print(q12.group(0));return q12.group(0)
+                # if q13: print(q13.group(0));return q13.group(0)
+                # if q14: print(q14.group(0));return q14.group(0)
+                # if q15: print(q15.group(0));return q15.group(0)
 
 
 
 
 def GetPosts(post):
     count=0
+    db = MySQLdb.connect("127.0.0.1", "root", "", "DATA" ,charset='utf8')
+    cur = db.cursor()
     for j in post['likes']['data']:
         for i in j['posts']['data']:
             if 'message' in i:
-                y = i['message']
-                if GetProducts(y):
+                if 'full_picture' in i and 'link' in i and 'full_picture' in i:
+                    _msg=i['message']
+                    _pic = i['full_picture']
+                    _link = i['link']
+                    _id = i['id']
+
+                if GetProducts(_msg):
                 # if  GetProductsForNumber(y):
                 #     x=GetProductsForSalary(y)
-                    print(y)
+                    print(_msg)
+                    print("this is pic ", _pic)
+                    print("this is link", _link)
+                    print("this is id", _id)
 
-                    if 'full_picture' in i:
-                        pic=i['full_picture']
-                        print("this is pic ",pic)
-                    if 'link'in i:
-                        link = i['link']
-                        print("this is link", link)
-                    if 'id'in i:
-                        id = i['id']
-                        print("this is id", id)
+
+                    # cur.execute("""INSERT INTO test VALUES(%s,%s,%s,%s)""" ,(_id,_msg,_link,_pic))
 
 
                     count +=1
                     print("===================================================")
+    db.commit()
+    db.close()
+
+    print("SHIIIIIIIIT")
 
     print("the count is ==> ",count)
 
@@ -160,49 +173,3 @@ if __name__ == '__main__':
     # print (isla)
     GetPosts(pages)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# token= os.environ.get('FACEBOOK_TEMP_TOKEN')
-# graph=facebook.GraphAPI(token)
-# profile=graph.get_object('me',fields='id')
-# print(json.dumps(profile,indent=4))
-#
-# access_token = 'EAACEdEose0cBANAqtNX6o0ltLCIkyV9xNtSIWZBYDeA2PCyUOMjBdIqTBXbmeeH5utUDme6bBMthMGeA7dTczSCHI5CNmCnqR51Kuuamzk4Ed1a3n9ucFnuTxVkTL5VA8hd2wcmOjcVAS5ZBvVD7Qg99FbaUP9NLaZBueTuuTRdYh49YHwIjLXblhMSMrnZAY8D9J7vBwAZDZD'     # Obtained from https://developers.facebook.com/tools/accesstoken/
-# app_id = "337744223404713"          # Obtained from https://developers.facebook.com/
-# client_secret = "50d613d48ac57206f9588775c27053a9"    # Obtained from https://developers.facebook.com/
-# link='https://graph.facebook.com/oauth/access_token?client_id=337744223404713&client_secret=50d613d48ac57206f9588775c27053a9&grant_type=fb_exchange_token&fb_exchange_token=EAACEdEose0cBANAqtNX6o0ltLCIkyV9xNtSIWZBYDeA2PCyUOMjBdIqTBXbmeeH5utUDme6bBMthMGeA7dTczSCHI5CNmCnqR51Kuuamzk4Ed1a3n9ucFnuTxVkTL5VA8hd2wcmOjcVAS5ZBvVD7Qg99FbaUP9NLaZBueTuuTRdYh49YHwIjLXblhMSMrnZAY8D9J7vBwAZDZD'
-# s = requests.Session()
-# token = s.get(link).content
-# token=json.loads(token)
-# token=token.get('access_token')
-# print token
-# https://graph.facebook.com/oauth/access_token?client_id=337744223404713&client_secret=50d613d48ac57206f9588775c27053a9&grant_type=fb_exchange_token&fb_exchange_token=ACCESS_TOKEN_HERE
-
-# token='EAACEdEose0cBANAqtNX6o0ltLCIkyV9xNtSIWZBYDeA2PCyUOMjBdIqTBXbmeeH5utUDme6bBMthMGeA7dTczSCHI5CNmCnqR51Kuuamzk4Ed1a3n9ucFnuTxVkTL5VA8hd2wcmOjcVAS5ZBvVD7Qg99FbaUP9NLaZBueTuuTRdYh49YHwIjLXblhMSMrnZAY8D9J7vBwAZDZD'
-# me='https://graph.facebook.com/v2.10/me?access_token='+ token
-# likes = 'https://graph.facebook.com/v2.12/me/likes?access_token='+token
-# po='https://graph.facebook.com/v2.12/me?fields=likes.limit(20)%7Bposts%7Bmessage%2Cfull_picture%2Clink%7D%7D&access_token='+token
-
-# print token
