@@ -18,7 +18,7 @@ import sys
 
 
 
-short_token='EAAEzLTR2AqkBAGkHEaZAHEPHSV5zo7hmWWjruYZAGLaT2gCY85fBgfyc77QymwiFfXsHI2F43JJiJr4AMsQvBimoPtChDHyvmZBUEH0RxrIRnENZBNZBmSWGRVI4FrRi9Rg9D8dZAmQXZA5KZByZBqZAEEU9nzZB0oUpJ63rQ65qTbId9PkiZA2slHr3GzV6xTgZBAqJO7LkvhgBZBVAZDZD'
+short_token='EAAEzLTR2AqkBADOA54eUZBxLfZCauO7GJfYDSY83MFOCx81LZByCyIZBMsZA9bMSzFcyR2RA6C1d6M6B33PPX9wSsDz59VMM6RuheJNontZAit57cPKeF3i0CFYwrzdnW4atLJB7hETKjoeaZCf0d8cwdiMtPZBVtUlyZCWTUIxFxgFasGQoIMHtFfJNpjJZAeFKIj0K50saRSugZDZD'
 
 graph=facebook.GraphAPI(short_token)
 id='337744223404713'
@@ -129,7 +129,7 @@ def GetPosts(post):
                         print("this is id", _id)
 
                         # print(type())
-                        # cur.execute("""INSERT INTO test VALUES(%s,%s,%s,%s)""" ,(_id,_msg,_link,_pic))
+                        cur.execute("""INSERT INTO test VALUES(%s,%s,%s,%s)""" ,(_id,_msg,_link,_pic))
 
 
                         count +=1
