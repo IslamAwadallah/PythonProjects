@@ -15,18 +15,19 @@ from nltk.stem.isri import ISRIStemmer
 import facebook
 import sys
 
+# Islam=[]
+# Islam="https://www.facebook.com/dialog/oauth?client_id=<337744223404713>&redirect_uri=<https://developers.facebook.com/tools/explorer/145634995501895/>"
+#
+# access_token ="https://graph.facebook.com/oauth/access_token?client_id=337744223404713&client_secret=50d613d48ac57206f9588775c27053a9&code="+Islam[1]
 
-
-
-short_token='EAAEzLTR2AqkBADOA54eUZBxLfZCauO7GJfYDSY83MFOCx81LZByCyIZBMsZA9bMSzFcyR2RA6C1d6M6B33PPX9wSsDz59VMM6RuheJNontZAit57cPKeF3i0CFYwrzdnW4atLJB7hETKjoeaZCf0d8cwdiMtPZBVtUlyZCWTUIxFxgFasGQoIMHtFfJNpjJZAeFKIj0K50saRSugZDZD'
+short_token='EAAEzLTR2AqkBAJtB66WKk3YwNCPUHlB4K5Hy8Nw6S9nfocU6ZCWiZB9X5R1sSAPdPhkhlH2XgBNAoSsVcXt9vpe7MPxqaMHhrlQlDw1OaZBsqfFjtjGgF77nS9KDeAbAgZBW1qu2KUB0TKEozfpZCAZBQILfeFeCZBcfkEAMSQIBwZDZD'
 
 graph=facebook.GraphAPI(short_token)
 id='337744223404713'
 secrit='50d613d48ac57206f9588775c27053a9'
 long_token=graph.extend_access_token(id, secrit)
 graph=facebook.GraphAPI(long_token['access_token'])
-pages=graph.get_object('me?fields=likes.limit(15){posts{message,link,full_picture,id}}')
-
+pages=graph.get_object('me?fields=likes.limit(24){posts{id,created_time,link,message,full_picture}}')
 
 
 def GetProductsForSalary(x):
@@ -100,10 +101,7 @@ def GetProducts(product):
             if q9: print(q9.group(0));return q9.group(0)
             if q10: print(q10.group(0));return q10.group(0)
             if q11: print(q11.group(0));return q11.group(0)
-            # if q12: print(q12.group(0));return q12.group(0)
-            # if q13: print(q13.group(0));return q13.group(0)
-            # if q14: print(q14.group(0));return q14.group(0)
-            # if q15: print(q15.group(0));return q15.group(0)
+
 
 
 
@@ -115,21 +113,27 @@ def GetPosts(post):
     for j in post['likes']['data']:
         for i in j['posts']['data']:
             if 'message' in i:
-                if 'full_picture' in i and 'link' in i and 'full_picture' in i:
+                if 'full_picture' in i and 'link' in i and 'created_time'in i:
                     _msg=i['message']
                     _pic = i['full_picture']
                     _link = i['link']
                     _id = i['id']
+                    _time=i['created_time']
 
-                if GetProducts(_msg):
+                category = GetProducts(_msg)
+                if category:
                     if  GetProductsForSalary(_msg)==True:
                         print(_msg)
                         print("this is pic ", _pic)
                         print("this is link", _link)
                         print("this is id", _id)
+                        print("this is time", _time)
 
+                        t1 , t2=_time.split('T')
+                        print(t1)
+                        print("ssssssssss %s",t2)
                         # print(type())
-                        cur.execute("""INSERT INTO test VALUES(%s,%s,%s,%s)""" ,(_id,_msg,_link,_pic))
+                        cur.execute("""INSERT INTO test2 VALUES(%s,%s,%s,%s)""" ,(_id,_msg,_link,_pic))
 
 
                         count +=1
