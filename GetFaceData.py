@@ -14,6 +14,11 @@ from nltk.stem import PorterStemmer
 from nltk.stem.isri import ISRIStemmer
 import facebook
 import sys
+import schedule
+import time
+
+
+
 
 # Islam=[]
 # Islam="https://www.facebook.com/dialog/oauth?client_id=<337744223404713>&redirect_uri=<https://developers.facebook.com/tools/explorer/145634995501895/>"
@@ -27,7 +32,7 @@ id='337744223404713'
 secrit='50d613d48ac57206f9588775c27053a9'
 long_token=graph.extend_access_token(id, secrit)
 graph=facebook.GraphAPI(long_token['access_token'])
-pages=graph.get_object('me?fields=likes.limit(24){posts{id,created_time,link,message,full_picture}}')
+pages=graph.get_object('me?fields=likes.limit(24){posts.limit(30){id,created_time,link,message,full_picture}}')
 
 
 def GetProductsForSalary(x):
@@ -148,7 +153,8 @@ def GetPosts(post):
 
 
 
-
+def job():
+    GetPosts(pages)
 
 
 
@@ -175,5 +181,11 @@ if __name__ == '__main__':
     isla=json.dumps(pages, indent=4, sort_keys=True)
     # isla.encode('utf-8')
     # print (isla)
-    GetPosts(pages)
+    schedule.every(1).minutes.do(job)
+
+    while 1:
+        schedule.run_pending()
+        time.sleep(1)
+
+    # GetPosts(pages)
 
