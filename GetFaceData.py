@@ -18,7 +18,7 @@ import schedule
 import time
 
 
-short_token='EAAEzLTR2AqkBAFkZAYqTM6RQVhgrr4n3Ij0ubuX0cQkDPAcwCvxwToT1TZABXu5Y7EK0iyEzIaZCRGwHOvQ1XtZC0xoXo2ZC6OKd78swZC0vlsMjHfZA5suUXGAvPel6UQY3JHe64VhttydH9KXeWYyHZCqYdXJuH2cdCvr52eX8AdHXi4m88ZCuUCDqCKEGQZA5YZD'
+short_token='EAAEzLTR2AqkBAATmWfgac7TkFdoISY9jcsnVk4kGfOZAqZB9u7nGZArYYFreFZBzdo0V7yVvdcDILcPuPTeSkSCskHrZAZAMsnZAg39ByYVpglhQETK0YeteVhcmzvFRSlV9wT2s0oScNR5tytpOiv2pewrhZBGvZBoYZD'
 
 graph=facebook.GraphAPI(short_token)
 id='337744223404713'
@@ -32,38 +32,38 @@ class GetData:
     flag=0
     g=0
     def __init__(self):
-        print("scraping facebook pages posts  ")
+        print(" Graduation Project ")
 
-    def GetProductsForSalary(self,x):
-        s = False
-        ps = PorterStemmer()
-        words = word_tokenize(x)
-        st = ISRIStemmer()
-        length = len(words)
-        # print(x)
-
-        if length<30:
-            s=False
-        else:
-            i = 0
-            while i < length:
-                z = st.stem(words[i])
-                if re.search('\d\d+', z):
-                #     k = 0
-                #     while (k < len(z)):
-                #         if z[k] == "ش":
-                #             s = True
-                #             print("vvvvvvvvvvvvvvvvvvvvvvvvv", z)
-                #
-                # elif z == "شيكل" or z == "شيقل" or z == "ش" or z == "NIS" or z == "Nis":
-                    s = True
-                    # print("TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT====>", s)
-
-                i += 1
-
-
-
-        return s
+    # def GetProductsForSalary(self,x):
+    #     s = False
+    #     ps = PorterStemmer()
+    #     words = word_tokenize(x)
+    #     st = ISRIStemmer()
+    #     length = len(words)
+    #     # print(x)
+    #
+    #     if length<30:
+    #         s=False
+    #     else:
+    #         i = 0
+    #         while i < length:
+    #             z = st.stem(words[i])
+    #             if re.search('\d\d+', z):
+    #             #     k = 0
+    #             #     while (k < len(z)):
+    #             #         if z[k] == "ش":
+    #             #             s = True
+    #             #             print("vvvvvvvvvvvvvvvvvvvvvvvvv", z)
+    #             #
+    #             # elif z == "شيكل" or z == "شيقل" or z == "ش" or z == "NIS" or z == "Nis":
+    #                 s = True
+    #                 # print("TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT====>", s)
+    #
+    #             i += 1
+    #
+    #
+    #
+    #     return s
 
 
     def GetProducts(self,product):
@@ -73,7 +73,6 @@ class GetData:
         q4 = re.search("iphone", product)
         q5 = re.search("اي فون", product)
         q6 = re.search("لاب توب", product)
-
         q7 = re.search("laptop للبيع", product)
         q9 = re.search("ايفون", product)
         q10 = re.search("اي باد", product)
@@ -84,41 +83,10 @@ class GetData:
 
         if not q12 :
             if  q1 or q2  or q4 or q5 or q6 or q7 or q9 or q10 or q11 or q13:
-                # print(q.group(0))
-                    if q1:
+                    if q1 or q13 or q6 or q7:
                         self.type=0
-                        return q1.group(0)
-                    if q2:
+                    if q2 or q3 or q4 or q5 or q9 or q10 or q11 :
                         self.type=1
-                        return q2.group(0)
-                    if q3:
-                        self.type=1
-                        return  q3.group(0)
-                    if q4:
-                        self.type=1
-                        return q4.group(0)
-                    if q5:
-                        self.type=1
-                        return q5.group(0)
-                    if q6:
-                        self.type=0
-                    if q7:
-                        self.type=0
-                        return q7.group(0)
-                    if q9:
-                        self.type=1
-                        return q9.group(0)
-                    if q10:
-                        self.type=1
-                        return q10.group(0)
-                    if q11:
-                        self.type=1
-                        return q11.group(0)
-                    if q13:
-                        self.type=0
-                        return q13.group(0)
-
-
 
     def GetPosts(self,post):
         count=0
@@ -168,10 +136,10 @@ class GetData:
                             if self.flag==0:
                                 if self.type == 0:
                                     cur.execute("""INSERT INTO Posts VALUES(%s,%s,%s,%s,%s)""",
-                                                (_id, _msg, _link, _pic, "0"))
-                                else:
+                                                (_id, _msg, _link, _pic, self.type))
+                                elif self.type==1:
                                     cur.execute("""INSERT INTO Posts VALUES(%s,%s,%s,%s,%s)""",
-                                                (_id, _msg, _link, _pic, "1"))
+                                                (_id, _msg, _link, _pic, self.type))
 
                             count +=1
                             print("===================================================")
@@ -200,13 +168,6 @@ def job():
 
 if __name__ == '__main__':
     isla=json.dumps(pages, indent=4, sort_keys=True)
-
-
-
-
-
-
-
 
     schedule.every(0.1).minutes.do(job)
 
