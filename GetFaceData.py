@@ -2,30 +2,23 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import re
-import numpy
 import MySQLdb
-import nltk
-import arabicstemmer
 import json
-import os
-import requests
-from nltk.tokenize import word_tokenize
-from nltk.stem import PorterStemmer
-from nltk.stem.isri import ISRIStemmer
 import facebook
-import sys
 import schedule
 import time
+import unicodedata
+import Levenshtein
 
+short_token='EAAEzLTR2AqkBADlPcWnGtWbJWVqCze8bozZBg4jxKOzkgIbdF1jpqOCT5HvvZB5Abvi9vWTmCjZCac6NCMZBOZBgxVw46MicNv6VC5ZBAMlQXiHOdVbSliEXOD3Ea9bcfU9ZAefZBNLkJG2pN2xq6CNvANZAn4fAjjpsbMmfNeHzQ3wZDZD'
 
-short_token='EAAEzLTR2AqkBAATmWfgac7TkFdoISY9jcsnVk4kGfOZAqZB9u7nGZArYYFreFZBzdo0V7yVvdcDILcPuPTeSkSCskHrZAZAMsnZAg39ByYVpglhQETK0YeteVhcmzvFRSlV9wT2s0oScNR5tytpOiv2pewrhZBGvZBoYZD'
-
-graph=facebook.GraphAPI(short_token)
+graph= facebook.GraphAPI(short_token)
 id='337744223404713'
 secrit='50d613d48ac57206f9588775c27053a9'
 long_token=graph.extend_access_token(id, secrit)
-graph=facebook.GraphAPI(long_token['access_token'])
-pages=graph.get_object('me?fields=likes.limit(20){posts.limit(50){id,created_time,link,message,full_picture}}')
+graph= facebook.GraphAPI(long_token['access_token'])
+pages=graph.get_object('me?fields=id,name,likes{name,posts.limit(3)}')
+# pages=graph.get_object('me?fields=likes.limit(20){posts.limit(50){id,created_time,link,message,full_picture}}')
 # pages=graph.get_object('me?fields=likes.limit(30)%7Bposts.limit(50)%7Bmessage%2Clink%2Cfull_picture%2Cid%2Ccreated_time%7D%7D')
 # pages='https://graph.facebook.com/v2.12/me?fields=likes%7Bposts.limit(3)%7Bmessage%2Clink%2Cfull_picture%2Cid%2Ccreated_time%7D%7D&access_token='+short_token
 class GetData:
@@ -82,15 +75,29 @@ class GetData:
 
 
         if not q12 :
-            if  q1 or q2  or q4 or q5 or q6 or q7 or q9 or q10 or q11 or q13:
-                    if q1 or q13 or q6 or q7:
-                        self.type=0
-                    if q2 or q3 or q4 or q5 or q9 or q10 or q11 :
-                        self.type=1
+
+            if q1: self.type=0;return q1.group(0)
+            if q13:self.type=0;return q13.group(0)
+            if q6: self.type=0;return q6.group(0)
+            if q7: self.type=0;return q7.group(0)
+
+
+            if q2: self.type=1;return q2.group(0)
+            if q3: self.type=1;return q3.group(0)
+            if q4: self.type=1;return q4.group(0)
+            if q5: self.type=1;return q5.group(0)
+            if q9: self.type=1;return q9.group(0)
+            if q10:self.type=1;return q10.group(0)
+            if q11:self.type=1;return q11.group(0)
+
+
+
+
+
 
     def GetPosts(self,post):
         count=0
-        db = MySQLdb.connect("127.0.0.1", "root", "", "DATA" ,charset='utf8')
+        db = MySQLdb.connect("127.0.0.1", "root", "", "DATA1" ,charset='utf8')
         cur = db.cursor()
 
 
@@ -105,44 +112,109 @@ class GetData:
                         _id = i['id']
                         _time=i['created_time']
 
-                    category = self.GetProducts(_msg)
-                    if category:
-                        if  self.GetProductsForSalary(_msg)==True:
-                            # print(_msg)
-                            # print("this is pic ", _pic)
-                            # print("this is link", _link)
-                            # print("this is id",type(str(_id)))
-                            # print("this is time", _time)
-                            # print("sloom ",self.GetProducts(_msg))
-                            t1 , t2=_time.split('T')
-                            print(t1)
-                            cur.execute("""SELECT * FROM Posts""")
-                            post_id = cur.fetchall()
-                            # print(_id)
+                    if len(_msg)>50:
+                        if self.GetProducts(_msg):
+                            # if  self.GetProductsForSalary(_msg)==True:
+                            #     print(_msg)
+                            #     print("this is pic ", _pic)
+                            #     print("this is link", _link)
+                            #     print("this is id",type(str(_id)))
+                            #     print("this is time", _time)
+                                # print("sloom ",self.GetProducts(_msg))
+                                t1 , t2=_time.split('T')
+                                print(t1)
+                                cur.execute("""SELECT * FROM Posts""")
+                                post_id = cur.fetchall()
+                                # print(_id)
+                                # print(type(_msg))
+                                # print(type(post_id[1][1]))
+
+                                sab = unicodedata.normalize('NFKD', _msg).encode('ascii', 'ignore')
+
+                                print(type(sab))
+                                try:
+                                    if len(post_id)>0:
+                                        for p in post_id:
+                                            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                                            print(type(p[1]))
+                                            print(p[1])
+                                            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                                            print(type(_msg))
+                                            print(_msg)
+                                            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                                            DataBase_msg=unicodedata.normalize('NFKD', p[1]).encode('ascii', 'ignore')
+                                            Facebook_msg=unicodedata.normalize('NFKD', _msg).encode('ascii', 'ignore')
+                                            print(type(DataBase_msg))
+                                            print(type(Facebook_msg))
+
+                                            xab=Levenshtein.hamming(DataBase_msg,Facebook_msg)
+                                            print(DataBase_msg)
+                                            print("########################################################################")
+                                            print(Facebook_msg)
+                                            print(xab)
+                                            if xab==0:
+                                                cur.execute("""INSERT INTO Simelarity VALUES(%s,%s,%s,%s)""",(_id, _msg, _link, _pic))
+                                            else:
+
+                                                for postt in post_id:
+                                                    # print("yes")
+                                                    # print(postt[0])
+                                                    # print(_id)
+                                                    if postt[0] != _id:
+                                                        self.flag = 0
+                                                    else:
+                                                        self.flag = 1
+                                                        break
+
+                                                if self.flag==0:
+                                                    if self.type == 0:
+                                                        cur.execute("""INSERT INTO Posts VALUES(%s,%s,%s,%s,%s)""",
+                                                                    (_id, _msg, _link, _pic, '0'))
+                                                    elif self.type==1:
+                                                        cur.execute("""INSERT INTO Posts VALUES(%s,%s,%s,%s,%s)""",
+                                                                    (_id, _msg, _link, _pic, '1'))
+                                    else:
+                                        for postt in post_id:
+                                            # print("yes")
+                                            # print(postt[0])
+                                            # print(_id)
+                                            if postt[0] != _id:
+                                                self.flag = 0
+                                            else:
+                                                self.flag = 1
+                                                break
+
+                                        if self.flag == 0:
+                                            if self.type == 0:
+                                                cur.execute("""INSERT INTO Posts VALUES(%s,%s,%s,%s,%s)""",
+                                                            (_id, _msg, _link, _pic, '0'))
+                                            elif self.type == 1:
+                                                cur.execute("""INSERT INTO Posts VALUES(%s,%s,%s,%s,%s)""",
+                                                            (_id, _msg, _link, _pic, '1'))
+
+                                except:
+                                    print("not the Same")
+                                    for postt in post_id:
+                                        # print("yes")
+                                        # print(postt[0])
+                                        # print(_id)
+                                        if postt[0] != _id:
+                                            self.flag = 0
+                                        else:
+                                            self.flag = 1
+                                            break
+
+                                    if self.flag == 0:
+                                        if self.type == 0:
+                                            cur.execute("""INSERT INTO Posts VALUES(%s,%s,%s,%s,%s)""",
+                                                        (_id, _msg, _link, _pic, '0'))
+                                        elif self.type == 1:
+                                            cur.execute("""INSERT INTO Posts VALUES(%s,%s,%s,%s,%s)""",
+                                                        (_id, _msg, _link, _pic, '1'))
 
 
-
-                            for postt in post_id:
-                                print("yes")
-                                print(postt[0])
-                                print(_id)
-                                if postt[0]!=_id:
-                                    self.flag=0
-                                else:
-                                    self.flag=1
-                                    break
-
-
-                            if self.flag==0:
-                                if self.type == 0:
-                                    cur.execute("""INSERT INTO Posts VALUES(%s,%s,%s,%s,%s)""",
-                                                (_id, _msg, _link, _pic, self.type))
-                                elif self.type==1:
-                                    cur.execute("""INSERT INTO Posts VALUES(%s,%s,%s,%s,%s)""",
-                                                (_id, _msg, _link, _pic, self.type))
-
-                            count +=1
-                            print("===================================================")
+                                count +=1
+                                print("===================================================")
         db.commit()
         db.close()
 
@@ -167,13 +239,15 @@ def job():
     G.GetPosts(pages)
 
 if __name__ == '__main__':
-    isla=json.dumps(pages, indent=4, sort_keys=True)
+    json_api=json.dumps(pages, indent=4, sort_keys=True)
+    print(json_api)
 
-    schedule.every(0.1).minutes.do(job)
 
-    while 1:
-        schedule.run_pending()
-        time.sleep(1)
+    # schedule.every(0.1).minutes.do(job)
+    #
+    # while 1:
+    #     schedule.run_pending()
+    #     time.sleep(1)
 
 
 
